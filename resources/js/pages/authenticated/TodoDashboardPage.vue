@@ -34,6 +34,20 @@
 
 <script>
 export default {
-    //TODO: Implement Dashboard Functionality
+    data () {
+        return {
+            todos: []
+        }
+    },
+    methods: {
+        refresh: async function () {
+            const {response, status} = await this.$request.get('/api/todos');
+
+            console.log(response, status)
+        }
+    },
+    mounted () {
+        this.refresh();
+    }
 }
 </script>

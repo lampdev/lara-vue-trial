@@ -8,14 +8,19 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label for="loginEmail" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="loginEmail">
+                        <input type="email" v-model="email" class="form-control" id="loginEmail">
                     </div>
                     <div class="mb-3">
                         <label for="loginPassword" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="loginPassword">
+                        <input type="password" v-model="password" class="form-control" id="loginPassword">
                     </div>
                     <div class="d-flex flex-column align-items-center">
-                        <button class="btn btn-primary mb-3">Register</button>
+                        <button class="btn btn-primary mb-3" 
+                                v-bind:class="{'btn-disabled': !canBeRegistered}"
+                                :disabled="!canBeRegistered" 
+                                @click="register">
+                            Register
+                        </button>
                         <router-link :to="{name: 'login'}">Already have an account?</router-link>
                     </div>
                 </div>
@@ -26,10 +31,41 @@
 
 <script>
 export default {
-    /**
-     * Todo: Implement Registration Functionality.
-     * You should redirect the user to the Todo Dashboard
-     * after they register.
-     */
+    data () {
+        return {
+            email: '',
+            password: ''
+        }
+    },
+    methods: {
+        async register () {
+            if (!this.canBeRegistered) {
+                return;
+            }
+
+            await this.$request.get('/sanctum/csrf-cookie');
+
+            const response = await this.$request.post('/api/register', {
+                email: this.email,
+                password: this.password,
+            });
+
+            if (response.errors !== undefined) {
+                alert(response.message);
+
+                return;
+            } 
+
+            window.localStorage.setItem('authToken', response.token);
+
+            this.$router.push('/auth/todo-dashboard');
+        }
+    },
+    computed: {
+        canBeRegistered () {
+            return this.email.length >= 4 &&
+                   this.password.length >= 4;
+        }
+    }
 }
 </script>

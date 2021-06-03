@@ -51,7 +51,7 @@ class AuthController extends Controller
 
         $newUser = User::create([
             'email' => $request->input('email'),
-            'password' => Hash::make($request->input('password'))
+            'password' => $request->input('password')
         ]);
 
         $token = $newUser->createToken('api_token');
