@@ -8,26 +8,15 @@
             </div>
             <div class="card-body">
                 <div class="list-wrapper">
-                    <ul class="d-flex flex-column-reverse todo-list">
-                        <li v-for="todo in active">
-                            <div class="form-check">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <label class="form-check-label">
-                                            <input class="checkbox" type="checkbox" @change="check(todo.id)">
-                                            {{todo.description}} 
-                                            <i class="input-helper"></i>
-                                        </label> 
-                                    </div>
-                                    <div class="col-sm-6 text-right">
-                                        <div class="btn btn-sm btn-danger" @click="remove(todo.id)">
-                                            delete
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
+                    <ul class="d-flex flex-column-reverse todo-list" v-if="active.length > 0">
+                        <todo v-for="todo in active" 
+                              v-bind:key="todo.id" 
+                              :todo="todo"
+                              v-on:update="refresh"></todo>
                     </ul>
+                    <div class="alert alert-info" v-else>
+                        There are no items yet
+                    </div>
                 </div>
                 <br>
                 <div class="add-items d-flex">
@@ -48,19 +37,15 @@
             </div>
             <div class="card-body">
                 <div class="list-wrapper">
-                    <ul class="d-flex flex-column-reverse todo-list">
-                        <li v-for="todo in checked">
-                            <div class="form-check">
-                                <label class="form-check-label">
-                                    <input class="checkbox" type="checkbox" checked disabled>
-                                    <s>
-                                        {{todo.description}} 
-                                    </s>
-                                    <i class="input-helper"></i>
-                                </label> 
-                            </div>
-                        </li>
+                    <ul class="d-flex flex-column-reverse todo-list" v-if="checked.length > 0">
+                        <todo v-for="todo in checked" 
+                              v-bind:key="todo.id" 
+                              :todo="todo"
+                              v-on:update="refresh"></todo>
                     </ul>
+                    <div class="alert alert-info" v-else>
+                        There are no completed items yet
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,7 +53,12 @@
 </template>
 
 <script>
+import Todo from "../../components/Todo.vue";
+
 export default {
+    components: {
+        [Todo.name]: Todo
+    },
     data () {
         return {
             active: [],
@@ -77,16 +67,6 @@ export default {
         }
     },
     methods: {
-        async check (id) {
-            await this.$request.put(`/api/todos/${id}`);
-
-            this.refresh();
-        },
-        async remove (id) {
-            await this.$request.delete(`/api/todos/${id}`);
-
-            this.refresh();
-        },
         async add () {
             await this.$request.post(`/api/todos`, {
                 text: this.text
