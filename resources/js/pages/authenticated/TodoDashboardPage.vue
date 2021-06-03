@@ -7,13 +7,38 @@
                 Todos
             </div>
             <div class="card-body">
-                ********************<br/>
-                * Display a list of all of the user's Todos here.<br/>
-                * The user should be able to mark them as complete or delete them.<br/>
-                * Completed Todos should move to the completed section below.<br/>
-                * At the bottom of the list, preset the user with the ability to add<br/>
-                * a new Todo.<br/>
-                ********************
+                <div class="list-wrapper">
+                    <ul class="d-flex flex-column-reverse todo-list">
+                        <li v-for="todo in active">
+                            <div class="form-check">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <label class="form-check-label">
+                                            <input class="checkbox" type="checkbox" @change="check(todo.id)">
+                                            {{todo.description}} 
+                                            <i class="input-helper"></i>
+                                        </label> 
+                                    </div>
+                                    <div class="col-sm-6 text-right">
+                                        <div class="btn btn-sm btn-danger" @click="remove(todo.id)">
+                                            delete
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <br>
+                <div class="add-items d-flex">
+                    <input type="text" class="form-control todo-list-input" 
+                           v-model="text"
+                           placeholder="What is planned to do?"> 
+                    &nbsp;
+                    <button class="add btn btn-primary font-weight-bold todo-list-add-btn" @click="add">
+                        Add
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -22,11 +47,21 @@
                 Completed Todos
             </div>
             <div class="card-body">
-                ********************<br/>
-                * Display a list of all of the user's completed Todos here.<br/>
-                * Should show the date / time when each Todo was completed.<br/>
-                * The user should be able to delete them.<br/>
-                ********************
+                <div class="list-wrapper">
+                    <ul class="d-flex flex-column-reverse todo-list">
+                        <li v-for="todo in checked">
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input class="checkbox" type="checkbox" checked disabled>
+                                    <s>
+                                        {{todo.description}} 
+                                    </s>
+                                    <i class="input-helper"></i>
+                                </label> 
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -36,14 +71,43 @@
 export default {
     data () {
         return {
-            todos: []
+            active: [],
+            checked: [],
+            text: ''
         }
     },
     methods: {
-        refresh: async function () {
-            const {response, status} = await this.$request.get('/api/todos');
+        async check (id) {
+            await this.$request.put(`/api/todos/${id}`);
 
-            console.log(response, status)
+            this.refresh();
+        },
+        async remove (id) {
+            await this.$request.delete(`/api/todos/${id}`);
+
+            this.refresh();
+        },
+        async add () {
+            await this.$request.post(`/api/todos`, {
+                text: this.text
+            });
+
+            this.refresh();
+        },
+        refresh: async function () {
+            const response = await this.$request.get('/api/todos');
+
+            const todos = {
+                active: [],
+                checked: [],
+            };
+
+            for (let todo of response.data.todos) {
+                todos[todo.completed_at === null ? 'active' : 'checked'].push(todo);
+            }
+
+            this.active = todos.active;
+            this.checked = todos.checked;
         }
     },
     mounted () {
@@ -51,3 +115,8 @@ export default {
     }
 }
 </script>
+<style>
+    .text-right {
+        text-align: right;
+    }
+</style>

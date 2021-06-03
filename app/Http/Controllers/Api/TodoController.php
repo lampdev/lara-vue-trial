@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Todo;
+use Carbon\Carbon;
 
 class TodoController extends Controller
 {
@@ -15,11 +17,10 @@ class TodoController extends Controller
      */
     public function index(Request $request)
     {
-        $todos = [];
-
-        //TODO: Implement this method
-
-        return response()->json($todos);
+        return response()->json([
+            'todos' => Todo::where('user_id', $request->user()->id)
+                           ->get()
+        ]);
     }
 
     /**
@@ -30,9 +31,10 @@ class TodoController extends Controller
      */
     public function store(Request $request)
     {
-        $todo = null;
-
-        //TODO: Implement this method
+        $todo = Todo::create([
+            'user_id' => $request->user()->id,
+            'description' => $request->input('text'),
+        ]);
 
         return response()->json($todo);
     }
@@ -46,9 +48,19 @@ class TodoController extends Controller
      */
     public function update(Request $request, $todoId)
     {
-        //TODO: Implement this method
+        $todo = Todo::find($todoId);
 
-        return response()->json([]);
+        if (!$todo) {
+            abort(404);
+        }
+
+        $todo->completed_at = Carbon::now();
+
+        $todo->update();
+
+        return response()->json([
+            'todo' => $todo
+        ]);
     }
 
     /**
@@ -60,7 +72,13 @@ class TodoController extends Controller
      */
     public function destroy(Request $request, $todoId)
     {
-        //TODO: Implement this method
+        $todo = Todo::find($todoId);
+
+        if (!$todo) {
+            abort(404);
+        }
+
+        $todo->delete();
 
         return response()->json([]);
     }
