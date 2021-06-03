@@ -86,7 +86,7 @@ export default {
                 todos[todo.completed_at === null ? 'active' : 'checked'].push(todo);
             }
 
-            this.active = todos.active;
+            this.active  = todos.active;
             this.checked = todos.checked;
         }
     },

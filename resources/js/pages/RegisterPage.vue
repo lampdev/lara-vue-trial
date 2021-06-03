@@ -45,18 +45,20 @@ export default {
 
             await this.$request.get('/sanctum/csrf-cookie');
 
-            const response = await this.$request.post('/api/register', {
-                email: this.email,
-                password: this.password,
-            });
+            let response;
 
-            if (response.errors !== undefined) {
-                alert(response.message);
+            try {
+                response = await this.$request.post('/api/register', {
+                    email: this.email,
+                    password: this.password,
+                });
+            } catch (e) {
+                alert(`An error has occurred: ${e.data.message || e.statusText}`);
 
                 return;
-            } 
+            }
 
-            window.localStorage.setItem('authToken', response.token);
+            window.localStorage.setItem('authToken', response.data.token);
 
             this.$router.push('/auth/todo-dashboard');
         }

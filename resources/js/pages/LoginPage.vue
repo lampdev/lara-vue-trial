@@ -45,34 +45,32 @@ export default {
 
             await this.$request.get('/sanctum/csrf-cookie');
 
-            const response = await this.$request.post('/api/login', {
-                email: this.email,
-                password: this.password,
-            });
+            let response;
 
-            const data = response.data;
-
-            if (data.errors !== undefined) {
-                alert(data.message);
-
-                return;
-            } 
-
-            if (data.token === undefined || response.status !== 200) {
-                alert('Something went wrong. Please try to reload page');
+            try {
+                response = await this.$request.post('/api/login', {
+                    email: this.email,
+                    password: this.password,
+                });
+            } catch (e) {
+                if (e.status === 401) {
+                    alert(`Please check your credentials`);
+                } else {
+                    alert(`An error has occurred: ${e.data.message || e.statusText}`);
+                }
 
                 return;
             }
 
-            window.localStorage.setItem('authToken', data.token);
+            window.localStorage.setItem('authToken', response.data.token);
 
             this.$router.push('/auth/todo-dashboard');
         }
     },
     computed: {
         canBeLogged () {
-            return this.email.length >= 4 &&
-                   this.password.length >= 4;
+            return this.email.length > 0 &&
+                   this.password.length > 0;
         }
     }
 }

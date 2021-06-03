@@ -24,7 +24,22 @@ Vue.use({
             }
         }
 
-        Vue.prototype.$request = axios.create(config);
+        const client = axios.create(config);
+
+        client.interceptors.response.use(
+            response => {
+                return response;
+            },
+            error => {
+                if (error.response.status === 401 || error.response.status === 419) {
+                    window.localStorage.removeItem('authToken');
+                }
+
+                return Promise.reject(error.response);
+            }
+        );
+
+        Vue.prototype.$request = client;
     }
 })
 
