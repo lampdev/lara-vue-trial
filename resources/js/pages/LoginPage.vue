@@ -43,20 +43,22 @@ export default {
                 return;
             }
 
-            await this.$request.get('/sanctum/csrf-cookie');
+            await this.$request().get('/sanctum/csrf-cookie');
 
             let response;
 
             try {
-                response = await this.$request.post('/api/login', {
+                response = await this.$request().post('/api/login', {
                     email: this.email,
                     password: this.password,
                 });
             } catch (e) {
-                if (e.status === 401) {
-                    alert(`Please check your credentials`);
+                if (e.status === 422) {
+                    this.$alert(this.$errorMessage(e.data.errors));
+                } else if(e.status === 401) {
+                    this.$alert(`Please check your credentials`);
                 } else {
-                    alert(`An error has occurred: ${e.data.message || e.statusText}`);
+                    this.$alert(`An error has occurred: ${e.data.message || e.statusText}`);
                 }
 
                 return;

@@ -8,40 +8,25 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import VueRouter from 'vue-router';
 import router from '@/router';
 
+import ErrorHandler from '@/errorsHandler';
+import Request from '@/request';
+import Swal from 'sweetalert2';
+
 Vue.use(VueRouter);
+Vue.use(ErrorHandler);
+
+Vue.use(Request)
 
 Vue.use({
     install (Vue, options) {
-        const auth = window.localStorage.getItem('authToken');
-
-        const config = {
-            withCredentials: true,
-        };
-
-        if (auth !== null) {
-            config.headers = {
-                Authorization: `Bearer ${auth}`
-            }
-        }
-
-        const client = axios.create(config);
-
-        client.interceptors.response.use(
-            response => {
-                return response;
-            },
-            error => {
-                if (error.response.status === 401 || error.response.status === 419) {
-                    window.localStorage.removeItem('authToken');
-                }
-
-                return Promise.reject(error.response);
-            }
-        );
-
-        Vue.prototype.$request = client;
+        Vue.prototype.$alert = text => Swal.fire({
+            title: 'Error!',
+            text,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
     }
-})
+});
 
 new Vue({
     router,

@@ -43,19 +43,20 @@ export default {
                 return;
             }
 
-            await this.$request.get('/sanctum/csrf-cookie');
+            await this.$request().get('/sanctum/csrf-cookie');
 
             let response;
 
             try {
-                response = await this.$request.post('/api/register', {
+                response = await this.$request().post('/api/register', {
                     email: this.email,
                     password: this.password,
                 });
             } catch (e) {
-                alert(`An error has occurred: ${e.data.message || e.statusText}`);
+                const message = e.status === 422 ? this.$errorMessage(e.data.errors) : 
+                                                   `An error has occurred: ${e.data.message || e.statusText}`;
 
-                return;
+                return this.$alert(message);
             }
 
             window.localStorage.setItem('authToken', response.data.token);

@@ -37,12 +37,12 @@
                     return;
                 }
 
-                await this.$request.put(`/api/todos/${id}`);
+                await this.$request().put(`/api/todos/${id}`);
 
                 this.$emit('update');
             },
             async remove (id) {
-                await this.$request.delete(`/api/todos/${id}`);
+                await this.$request().delete(`/api/todos/${id}`);
 
                 this.$emit('update');
             },
