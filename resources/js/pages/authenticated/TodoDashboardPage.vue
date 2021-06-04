@@ -7,13 +7,28 @@
                 Todos
             </div>
             <div class="card-body">
-                ********************<br/>
-                * Display a list of all of the user's Todos here.<br/>
-                * The user should be able to mark them as complete or delete them.<br/>
-                * Completed Todos should move to the completed section below.<br/>
-                * At the bottom of the list, preset the user with the ability to add<br/>
-                * a new Todo.<br/>
-                ********************
+                <div class="list-wrapper">
+                    <ul class="d-flex flex-column-reverse todo-list" v-if="todos.active.length > 0">
+                        <todo v-for="todo in todos.active" 
+                              v-bind:key="todo.id" 
+                              :todo="todo"
+                              v-on:update="refresh"></todo>
+                    </ul>
+                    <div class="alert alert-warning" v-else>
+                        There are no items yet
+                    </div>
+                </div>
+                <br>
+                <div class="add-items d-flex">
+                    <input type="text" class="form-control todo-list-input" 
+                           v-model="itemDescription"
+                           placeholder="What is planned to do?"
+                           v-on:keydown.enter="add"> 
+                    &nbsp;
+                    <button class="add btn btn-primary font-weight-bold todo-list-add-btn" @click="add">
+                        Add
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -22,18 +37,77 @@
                 Completed Todos
             </div>
             <div class="card-body">
-                ********************<br/>
-                * Display a list of all of the user's completed Todos here.<br/>
-                * Should show the date / time when each Todo was completed.<br/>
-                * The user should be able to delete them.<br/>
-                ********************
+                <div class="list-wrapper">
+                    <ul class="d-flex flex-column-reverse todo-list" v-if="todos.checked.length > 0">
+                        <todo v-for="todo in todos.checked" 
+                              v-bind:key="todo.id" 
+                              :todo="todo"
+                              v-on:update="refresh"></todo>
+                    </ul>
+                    <div class="alert alert-warning" v-else>
+                        There are no completed items yet
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import Todo from "@/components/Todo.vue";
+
 export default {
-    //TODO: Implement Dashboard Functionality
+    components: {
+        [Todo.name]: Todo
+    },
+    data () {
+        return {
+            loaded: false,
+            todos: {
+                active: [],
+                checked: [],
+            },
+            itemDescription: ''
+        }
+    },
+    methods: {
+        async add () {
+            if (this.itemDescription.length === 0) {
+                return;
+            }
+
+            await this.$request().post(`/api/todos`, {
+                text: this.itemDescription
+            });
+
+            this.itemDescription = '';
+
+            this.refresh();
+        },
+        refresh: async function () {
+            const response = await this.$request().get('/api/todos');
+
+            const todos = {
+                active: [],
+                checked: [],
+            };
+
+            for (let todo of response.data.todos) {
+                todos[todo.completed_at === null ? 'active' : 'checked'].push(todo);
+            }
+
+            this.todos = todos;
+        }
+    },
+    async mounted () {
+        await this.refresh();
+
+        this.loaded = true;
+    }
 }
 </script>
+<style>
+    .text-right {
+        text-align: right;
+    }
+</style>
