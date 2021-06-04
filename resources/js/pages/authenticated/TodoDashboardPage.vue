@@ -14,7 +14,7 @@
                               :todo="todo"
                               v-on:update="refresh"></todo>
                     </ul>
-                    <div class="alert alert-info" v-else>
+                    <div class="alert alert-warning" v-else>
                         There are no items yet
                     </div>
                 </div>
@@ -44,7 +44,7 @@
                               :todo="todo"
                               v-on:update="refresh"></todo>
                     </ul>
-                    <div class="alert alert-info" v-else>
+                    <div class="alert alert-warning" v-else>
                         There are no completed items yet
                     </div>
                 </div>
@@ -62,6 +62,7 @@ export default {
     },
     data () {
         return {
+            loaded: false,
             todos: {
                 active: [],
                 checked: [],
@@ -98,8 +99,10 @@ export default {
             this.todos = todos;
         }
     },
-    mounted () {
-        this.refresh();
+    async mounted () {
+        await this.refresh();
+
+        this.loaded = true;
     }
 }
 </script>

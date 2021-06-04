@@ -58,7 +58,9 @@ class TodoController extends Controller
             abort(404);
         }
 
-        $todo->completed_at = Carbon::now();
+        $status = $request->input('status');
+
+        $todo->completed_at = $status ? Carbon::now() : null;
 
         $todo->update();
 

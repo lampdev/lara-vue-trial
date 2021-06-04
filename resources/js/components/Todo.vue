@@ -7,8 +7,8 @@
                         <input class="checkbox" 
                                type="checkbox" 
                                :checked="checked" 
-                               :disabled="checked" 
-                               @change="check(todo.id)">
+                               v-model="status"
+                               @change="check">
                         <s v-if="checked">
                             {{todo.description}}
                         </s>
@@ -19,7 +19,7 @@
                     </label> 
                 </div>
                 <div class="col-sm-6 text-right">
-                    <div class="btn btn-sm btn-danger" @click="remove(todo.id)">
+                    <div class="btn btn-sm btn-danger" @click="remove">
                         delete
                     </div>
                 </div>
@@ -31,18 +31,21 @@
     export default {
         name: 'todo',
         props: ['todo'],
+        data () {
+            return {
+                status: false
+            }
+        },
         methods: {
-            async check (id) {
-                if (this.checked) {
-                    return;
-                }
-
-                await this.$request().put(`/api/todos/${id}`);
+            async check () {
+                await this.$request().put(`/api/todos/${this.todo.id}`, {
+                    status: this.status
+                });
 
                 this.$emit('update');
             },
-            async remove (id) {
-                await this.$request().delete(`/api/todos/${id}`);
+            async remove () {
+                await this.$request().delete(`/api/todos/${this.todo.id}`);
 
                 this.$emit('update');
             },
@@ -51,6 +54,9 @@
             checked () {
                 return this.todo.completed_at !== null;
             }
+        },
+        created () {
+            this.status = this.checked;
         }
     }
 </script>
